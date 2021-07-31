@@ -6,45 +6,28 @@ const fetch = require('node-fetch')
 const convert = require('xml-js')
 
 require('dotenv').config()
+
 const key = process.env.API_KEY
-const url = 'https://www.goodreads.com/search.xml?key=' + key + '&q=Magic%27s+Promise'
+const base_url = 'https://www.goodreads.com/search.xml?key=' + key + '&q='
 
-console.log(key)
-
-app.listen(port, () => {
+app.listen(port, (err) => {
+  if (err) throw err
   console.log(`Book list app listening at http://localhost:${port}`)
 })
 
 app.use(cors())
 
 app.get('/', (req, res) => {
-	res.send('Hello Express app');
+	res.send('Hello little book listing app');
 });
 
-app.get('/:type/:id', (req, res, next) => {
-  const id = req.params.id
-  const type = req.params.type
+app.get('/:query', (req, res, next) => {
+  let query = encodeURI(req.params.query)
+  let url = base_url + query
 
-  console.log(`id: ${id}, type: ${type}`)
-
+  console.log(`url: ${url}`)
+  
   fetch(url)
-    .then(res => res.text())
-    .then(body => {
-      const data = convert.xml2json(body, {
-        compact: true, spaces: 4
-      })
-      res.send(data)
-    })
-    .catch(err => console.error(err))
-})
-
-app.post('/', (req, res, next) => {
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/xml'
-    }
-  })
     .then(res => res.text())
     .then(body => {
       const data = convert.xml2json(body, {
