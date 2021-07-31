@@ -4,10 +4,15 @@ const app = express()
 const port = 3000
 const fetch = require('node-fetch')
 const convert = require('xml-js')
+const envalid = require('envalid')
 
 require('dotenv').config()
 const key = process.env.API_KEY
 const url = 'https://www.goodreads.com/search.xml?key=' + key + '&q=Magic%27s+Promise'
+
+const env = envalid.cleanEnv(process.env, {
+  PGSTRING: envalid.url(),
+})
 
 app.use(cors())
 
