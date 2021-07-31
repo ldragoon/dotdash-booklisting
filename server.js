@@ -10,12 +10,12 @@ require('dotenv').config()
 const key = process.env.API_KEY
 const base_url = 'https://www.goodreads.com/search.xml?key=' + key + '&q='
 
+app.use(cors())
+
 app.listen(port, (err) => {
   if (err) throw err
   console.log(`Book list app listening at http://localhost:${port}`)
 })
-
-app.use(cors())
 
 app.get('/', (req, res) => {
 	res.send('Hello little book listing app');
