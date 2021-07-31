@@ -9,11 +9,17 @@ require('dotenv').config()
 const key = process.env.API_KEY
 const url = 'https://www.goodreads.com/search.xml?key=' + key + '&q=Magic%27s+Promise'
 
+console.log(key)
+
 app.listen(port, () => {
   console.log(`Book list app listening at http://localhost:${port}`)
 })
 
 app.use(cors())
+
+app.get('/', (req, res) => {
+	res.send('Hello Express app');
+});
 
 app.get('/:type/:id', (req, res, next) => {
   const id = req.params.id
