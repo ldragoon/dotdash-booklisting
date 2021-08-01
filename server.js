@@ -3,7 +3,7 @@ const cors = require('cors')
 const app = express()
 const port = process.env.port || 3000
 const fetch = require('node-fetch')
-const convert = require('xml-js')
+const parser = require('fast-xml-parser')
 
 require('dotenv').config()
 
@@ -29,11 +29,22 @@ app.get('/:query', (req, res, next) => {
   
   fetch(url)
     .then(res => res.text())
-    .then(body => {
-      const data = convert.xml2json(body, {
-        compact: true, spaces: 4
-      })
-      res.send(data)
+    .then(xml => {
+      if ( parser.validate(xml) === true ) {
+        // optional (it'll return an object in case it's not valid)
+        const data = parser.parse(xml, {
+          attributeNamePrefix : '',
+          attrNodeName: false,
+          textNodeName: 'text',
+          trimValues: true,
+          arrayMode: false
+        })
+
+        if ( !data ) data = {
+          "error": "this item doesn't exist"
+        }
+        res.send(data)
+      }      
     })
     .catch(err => console.error(err))
 })
