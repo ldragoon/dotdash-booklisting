@@ -8,7 +8,6 @@ const parser = require('fast-xml-parser')
 require('dotenv').config()
 
 const key = process.env.API_KEY
-const base_url = 'https://www.goodreads.com/author/list.xml?key=' + key + '&id=3389&q='
 
 app.use(cors())
 
@@ -18,43 +17,50 @@ app.listen(port, (err) => {
 })
 
 app.get('/', (req, res) => {
-	res.send('Hello little book listing app');
+	res.send('Hello little book listing app')
 });
 
 app.get('/:query', (req, res, next) => {
   let query = encodeURI(req.params.query)
-  
-  // get author id so you can use it to return
-  // the nicely paginated results
-  let url = base_url + query
-  
+  // need to access this link first to get the authorid which allows you 
+  // to access the nicely formatted paginated list of books.
+  const base_url = 'https://www.goodreads.com/search/index.xml?key=' + key
+  let url = base_url + '&q=' + query
+  let page = 1;
+
   fetch(url)
     .then(res => res.text())
     .then(xml => {
       const json = parser.parse(xml)
-      const authorId = json.GoodreadsResponse.author.id
-      const authorIdUrl = 'https://www.goodreads.com/author/list.xml?key=' + key + '&id=' + authorId
+      const _work = json.GoodreadsResponse.search.results.work
+      if ( typeof _work === 'object' ) {
+        const work = _work.shift();
+        const authorId = work.best_book.author['id'];
+
+        // TODO: pass in actual pagination request value from query.params
+        const authorIdUrl = 'https://www.goodreads.com/author/list.xml?key=' + key + '&id=' + authorId + '&page=' + page
+        fetch(authorIdUrl)
+          .then(res => res.text())
+          .then(xml => {
+            if ( parser.validate(xml) === true ) {
+              // optional (it'll return an object in case it's not valid)
+              const data = parser.parse(xml, {
+                attributeNamePrefix : '',
+                attrNodeName: false,
+                textNodeName: 'text',
+                ignoreAttributes: false,
+                trimValues: true,
+                arrayMode: false
+              })
       
-      fetch(authorIdUrl)
-        .then(res => res.text())
-        .then(xml => {
-          if ( parser.validate(xml) === true ) {
-            // optional (it'll return an object in case it's not valid)
-            const data = parser.parse(xml, {
-              attributeNamePrefix : '',
-              attrNodeName: false,
-              textNodeName: 'text',
-              trimValues: true,
-              arrayMode: false
-            })
-    
-            if ( !data ) data = {
-              "error": "this item doesn't exist"
+              if ( !data ) data = {
+                "error": "this item doesn't exist"
+              }
+              res.send(data)
             }
-            res.send(data)
-          }
-        })
-        .catch(err => console.error(err))
+          })
+          .catch(err => console.error(err))
+      }
     })
     .catch(err => console.error(err))
 })
