@@ -21,14 +21,14 @@ app.get('/', (req, res) => {
 	res.send('Hello little book listing app')
 });
 
-app.get('/:query', (req, res, next) => {
+app.get('/authorid/:query/:pagenum', (req, res, next) => {
   let query = encodeURI(req.params.query)
   // need to access this link first to get the authorid which allows you 
   // to access the nicely formatted paginated list of books.
   const base_url = 'https://www.goodreads.com/search/index.xml?key=' + key
   let url = base_url + '&q=' + query
   let parsedQuery = querystring.parse(url)
-  let page = parsedQuery.page
+  let page = req.params.pagenum
 
   fetch(url)
     .then(res => res.text())
@@ -38,8 +38,6 @@ app.get('/:query', (req, res, next) => {
       if ( typeof _work === 'object' ) {
         const work = _work.shift();
         const authorId = work.best_book.author['id']
-
-        // TODO: pass in actual pagination request value from query.params
         const authorIdUrl = 'https://www.goodreads.com/author/list.xml?key=' + key + '&id=' + authorId + '&page=' + page
         fetch(authorIdUrl)
           .then(res => res.text())
