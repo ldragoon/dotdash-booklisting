@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 	res.send('Hello little book listing app')
 });
 
-app.get('/authorid/:query/:pagenum', (req, res, next) => {
+app.get('/authorId/:query/:pagenum', (req, res, next) => {
   let query = encodeURI(req.params.query)
   // need to access this link first to get the authorid which allows you 
   // to access the nicely formatted paginated list of books.
