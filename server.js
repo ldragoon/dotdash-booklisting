@@ -52,11 +52,11 @@ app.get('/authorId/:query/:pagenum', (req, res, next) => {
                 trimValues: true,
                 arrayMode: false
               })
-      
+              
               if ( !data ) data = {
                 "error": "this item doesn't exist"
               }
-              res.send(data)
+              res.send(data.GoodreadsResponse.author)
             }
           })
           .catch(err => console.error(err))
